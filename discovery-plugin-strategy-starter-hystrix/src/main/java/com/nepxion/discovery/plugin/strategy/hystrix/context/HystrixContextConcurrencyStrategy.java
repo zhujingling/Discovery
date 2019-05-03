@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.alibaba.ttl.threadpool.TtlExecutors;
 import com.nepxion.discovery.plugin.strategy.wrapper.CallableWrapper;
 import com.netflix.hystrix.HystrixThreadPoolKey;
 import com.netflix.hystrix.HystrixThreadPoolProperties;
@@ -32,8 +33,9 @@ import com.netflix.hystrix.strategy.properties.HystrixProperty;
 
 // 使用线程隔离模式时，无法获取ThreadLocal中信息，自定义并发策略解决
 public class HystrixContextConcurrencyStrategy extends HystrixConcurrencyStrategy {
-    @Autowired
+    @Autowired(required = false)
     private CallableWrapper wrapper;
+
     private HystrixConcurrencyStrategy delegate;
 
     public HystrixContextConcurrencyStrategy() {
@@ -68,16 +70,31 @@ public class HystrixContextConcurrencyStrategy extends HystrixConcurrencyStrateg
 
     @Override
     public ThreadPoolExecutor getThreadPool(HystrixThreadPoolKey threadPoolKey, HystrixProperty<Integer> corePoolSize, HystrixProperty<Integer> maximumPoolSize, HystrixProperty<Integer> keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
-        return delegate.getThreadPool(threadPoolKey, corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
+        // 如果wrapper为空，则执行Ttl模式，适用于Spring Cloud Gateway
+        if (wrapper != null) {
+            return delegate.getThreadPool(threadPoolKey, corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
+        } else {
+            return (ThreadPoolExecutor) TtlExecutors.getTtlExecutorService(delegate.getThreadPool(threadPoolKey, corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue));
+        }
     }
 
     @Override
     public ThreadPoolExecutor getThreadPool(HystrixThreadPoolKey threadPoolKey, HystrixThreadPoolProperties threadPoolProperties) {
-        return delegate.getThreadPool(threadPoolKey, threadPoolProperties);
+        // 如果wrapper为空，则执行Ttl模式，适用于Spring Cloud Gateway
+        if (wrapper != null) {
+            return delegate.getThreadPool(threadPoolKey, threadPoolProperties);
+        } else {
+            return (ThreadPoolExecutor) TtlExecutors.getTtlExecutorService(delegate.getThreadPool(threadPoolKey, threadPoolProperties));
+        }
     }
 
     @Override
     public <T> Callable<T> wrapCallable(Callable<T> callable) {
-        return wrapper.wrapCallable(callable);
+        // 如果wrapper为空，直接返回原装Callable，适用于Spring Cloud Gateway
+        if (wrapper != null) {
+            return wrapper.wrapCallable(callable);
+        } else {
+            return callable;
+        }
     }
 }
