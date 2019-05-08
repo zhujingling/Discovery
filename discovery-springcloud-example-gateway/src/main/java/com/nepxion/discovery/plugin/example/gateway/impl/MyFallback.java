@@ -13,10 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/fallback")
 public class MyFallback {
-
-    @RequestMapping("")
+    @RequestMapping("/fallback")
     public String fallback() {
         return "Spring Cloud Gateway Fallback";
     }
