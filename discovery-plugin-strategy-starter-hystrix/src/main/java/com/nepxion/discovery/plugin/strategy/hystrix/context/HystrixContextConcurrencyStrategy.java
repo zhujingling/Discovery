@@ -35,7 +35,6 @@ import com.netflix.hystrix.strategy.properties.HystrixProperty;
 public class HystrixContextConcurrencyStrategy extends HystrixConcurrencyStrategy {
     @Autowired(required = false)
     private CallableWrapper wrapper;
-
     private HystrixConcurrencyStrategy delegate;
 
     public HystrixContextConcurrencyStrategy() {
