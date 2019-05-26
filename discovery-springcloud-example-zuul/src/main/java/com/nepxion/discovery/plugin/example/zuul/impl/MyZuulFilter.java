@@ -42,15 +42,20 @@ public class MyZuulFilter extends ZuulFilter {
         String routeVersion = getRouteVersionFromConfig();
         // String routeVersion = getRouteVersionFromCustomer();
 
-        System.out.println("Route Version=" + routeVersion);
+        String routeRegion = getRouteRegionFromConfig();
+        // String routeRegion = getRouteRegionFromCustomer();
 
-        // Í¨¹ı¹ıÂËÆ÷ÉèÖÃÂ·ÓÉHeaderÍ·²¿ĞÅÏ¢£¬À´È¡´ú½çÃæ£¨Postman£©ÉÏµÄÉèÖÃ£¬²¢È«Á´Â·´«µİµ½·şÎñ¶Ë
+        System.out.println("Route Version=" + routeVersion);
+        System.out.println("Route Region=" + routeRegion);
+
+        // é€šè¿‡è¿‡æ»¤å™¨è®¾ç½®è·¯ç”±Headerå¤´éƒ¨ä¿¡æ¯ï¼Œæ¥å–ä»£ç•Œé¢ï¼ˆPostmanï¼‰ä¸Šçš„è®¾ç½®ï¼Œå¹¶å…¨é“¾è·¯ä¼ é€’åˆ°æœåŠ¡ç«¯
         ZuulStrategyFilterResolver.setHeader(DiscoveryConstant.N_D_VERSION, routeVersion);
+        ZuulStrategyFilterResolver.setHeader(DiscoveryConstant.N_D_REGION, routeRegion);
 
         return null;
     }
 
-    // ´ÓÔ¶³ÌÅäÖÃÖĞĞÄ»òÕß±¾µØÅäÖÃÎÄ¼ş»ñÈ¡°æ±¾Â·ÓÉÅäÖÃ¡£Èç¹ûÊÇÔ¶³ÌÅäÖÃÖĞĞÄ£¬ÔòÖµ»á¶¯Ì¬¸Ä±ä
+    // ä»è¿œç¨‹é…ç½®ä¸­å¿ƒæˆ–è€…æœ¬åœ°é…ç½®æ–‡ä»¶è·å–ç‰ˆæœ¬è·¯ç”±é…ç½®ã€‚å¦‚æœæ˜¯è¿œç¨‹é…ç½®ä¸­å¿ƒï¼Œåˆ™å€¼ä¼šåŠ¨æ€æ”¹å˜
     protected String getRouteVersionFromConfig() {
         RuleEntity ruleEntity = pluginAdapter.getRule();
         if (ruleEntity != null) {
@@ -63,8 +68,26 @@ public class MyZuulFilter extends ZuulFilter {
         return null;
     }
 
-    // ×Ô¶¨Òå°æ±¾Â·ÓÉÅäÖÃ
+    // ä»è¿œç¨‹é…ç½®ä¸­å¿ƒæˆ–è€…æœ¬åœ°é…ç½®æ–‡ä»¶è·å–åŒºåŸŸè·¯ç”±é…ç½®ã€‚å¦‚æœæ˜¯è¿œç¨‹é…ç½®ä¸­å¿ƒï¼Œåˆ™å€¼ä¼šåŠ¨æ€æ”¹å˜
+    protected String getRouteRegionFromConfig() {
+        RuleEntity ruleEntity = pluginAdapter.getRule();
+        if (ruleEntity != null) {
+            StrategyEntity strategyEntity = ruleEntity.getStrategyEntity();
+            if (strategyEntity != null) {
+                return strategyEntity.getRegionValue();
+            }
+        }
+
+        return null;
+    }
+
+    // è‡ªå®šä¹‰ç‰ˆæœ¬è·¯ç”±é…ç½®
     protected String getRouteVersionFromCustomer() {
         return "{\"discovery-springcloud-example-a\":\"1.0\", \"discovery-springcloud-example-b\":\"1.0\", \"discovery-springcloud-example-c\":\"1.0;1.2\"}";
+    }
+
+    // è‡ªå®šä¹‰åŒºåŸŸè·¯ç”±é…ç½®
+    protected String getRouteRegionFromCustomer() {
+        return "{\"discovery-springcloud-example-a\":\"qa;dev\", \"discovery-springcloud-example-b\":\"dev\", \"discovery-springcloud-example-c\":\"qa\"}";
     }
 }
